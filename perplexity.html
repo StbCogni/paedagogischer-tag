@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perplexity-Session — Pädagogischer Tag KI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8f7f4; --surface: #fff; --border: #e0ddd5;
+      --text: #1a1a1a; --muted: #6b6860;
+      --green: #2d6a4f; --green-light: #edf7f1;
+      --purple: #6d28d9; --purple-light: #f5f3ff; --purple-border: #ddd6fe;
+      --blue: #1d4e89; --blue-light: #eff6ff;
+      --amber: #b45309; --amber-light: #fffbeb;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 52px; gap: 16px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .back-link { display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--muted); font-size: 13px; transition: color 0.15s; }
+    .back-link:hover { color: var(--text); }
+    .topbar-title { font-size: 14px; font-weight: 700; }
+    .topbar-right { display: flex; gap: 8px; }
+    .topbar-btn { font-size: 12px; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-family: inherit; transition: all 0.15s; text-decoration: none; }
+    .topbar-btn:hover { background: #f0f0f0; }
+    .topbar-btn.purple { background: var(--purple); color: #fff; border-color: var(--purple); font-weight: 600; }
+    .topbar-btn.purple:hover { opacity: 0.85; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #3b0764 0%, #6d28d9 55%, #7c3aed 100%);
+      color: #fff; padding: 64px 24px 48px; text-align: center; position: relative;
+    }
+    .hero-eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.55; margin-bottom: 14px; }
+    .hero h1 { font-size: clamp(26px, 5vw, 44px); font-weight: 800; line-height: 1.15; margin-bottom: 12px; }
+    .hero-meta { font-size: 15px; opacity: 0.75; margin-bottom: 24px; }
+    .hero-chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .hero-chip { font-size: 12px; padding: 5px 14px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22); }
+    .qr-btn-hero { position: absolute; top: 64px; right: 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 9px 13px; color: #fff; cursor: pointer; font-size: 11px; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .qr-btn-hero:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── MAIN ── */
+    .main { max-width: 820px; margin: 0 auto; padding: 48px 20px 72px; }
+    .eyebrow { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    h2.section-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .section-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+    /* ── ABLAUF ── */
+    .ablauf-box {
+      background: var(--purple-light); border: 1px solid var(--purple-border);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 40px;
+      display: flex; gap: 32px; flex-wrap: wrap;
+    }
+    .ablauf-step { flex: 1; min-width: 160px; }
+    .ablauf-num { font-size: 10px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .ablauf-text { font-size: 13px; color: var(--text); font-weight: 600; }
+    .ablauf-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── THEMEN GRID ── */
+    .themen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-bottom: 56px; }
+    .thema-card {
+      background: var(--surface); border: 2px solid var(--purple-border);
+      border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;
+      position: relative;
+    }
+    .thema-card:hover { border-color: var(--purple); box-shadow: 0 4px 16px rgba(109,40,217,0.12); transform: translateY(-1px); }
+    .thema-card.selected { border-color: var(--purple); background: var(--purple-light); box-shadow: 0 0 0 3px rgba(109,40,217,0.15); }
+    .thema-fach { font-size: 10px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .thema-title { font-size: 15px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+    .thema-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .thema-badge {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 10px; background: var(--purple); color: #fff;
+      padding: 2px 8px; border-radius: 20px; font-weight: 700;
+      display: none;
+    }
+    .thema-card.selected .thema-badge { display: block; }
+
+    /* ── DELIVERABLES ── */
+    .deliverables-section { margin-bottom: 56px; }
+    .deliv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .deliv-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .deliv-icon { font-size: 20px; }
+    .deliv-name { font-size: 13px; font-weight: 700; }
+    .deliv-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── PADLET / ERGEBNISSE ── */
+    .ergebnisse-section { margin-bottom: 56px; }
+    .padlet-placeholder {
+      background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+      border: 2px dashed var(--purple-border); border-radius: 14px;
+      padding: 48px 32px; text-align: center;
+    }
+    .padlet-icon { font-size: 48px; margin-bottom: 16px; }
+    .padlet-placeholder h3 { font-size: 18px; font-weight: 700; color: var(--purple); margin-bottom: 8px; }
+    .padlet-placeholder p { font-size: 14px; color: var(--muted); max-width: 440px; margin: 0 auto 20px; line-height: 1.6; }
+    .padlet-hint { background: #fff; border: 1px solid var(--purple-border); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--muted); max-width: 480px; margin: 0 auto; text-align: left; line-height: 1.7; }
+    .padlet-hint strong { color: var(--purple); }
+
+    /* ── MATERIALIEN ── */
+    .mat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .mat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 6px; transition: box-shadow 0.15s; }
+    .mat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .mat-icon { font-size: 22px; }
+    .mat-name { font-size: 14px; font-weight: 700; }
+    .mat-desc { font-size: 12px; color: var(--muted); }
+
+    /* ── QR MODAL ── */
+    .qr-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; align-items: center; justify-content: center; }
+    .qr-overlay.open { display: flex; }
+    .qr-box { background: #fff; border-radius: 16px; padding: 32px; text-align: center; max-width: 300px; width: 90%; }
+    .qr-box h3 { font-size: 17px; margin-bottom: 6px; }
+    .qr-box p { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+    #qr-canvas { display: flex; justify-content: center; margin-bottom: 14px; }
+    .qr-url-text { font-size: 11px; color: var(--muted); background: #f5f5f5; padding: 8px; border-radius: 6px; word-break: break-all; margin-bottom: 16px; }
+    .qr-close { width: 100%; padding: 10px; background: var(--purple); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-family: inherit; font-weight: 600; }
+
+    footer { text-align: center; padding: 32px 20px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); }
+    footer a { color: var(--green); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="index.html" class="back-link">← Zurück zur Agenda</a>
+    <span style="color:var(--border)">|</span>
+    <span class="topbar-title">Perplexity-Session</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-btn" onclick="openQR()">📱 QR</button>
+    <a href="index.html#p12" class="topbar-btn purple">Zur Agenda-Phase</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <button class="qr-btn-hero" onclick="openQR()">
+    <span style="font-size:22px">⬛</span>
+    <span>QR-Code</span>
+  </button>
+  <p class="hero-eyebrow">Pädagogischer Tag · KI in der Schule</p>
+  <h1>Perplexity-Session:<br>Schülerrolle einnehmen</h1>
+  <p class="hero-meta">13:45 – 15:15 Uhr &nbsp;·&nbsp; 90 Minuten &nbsp;·&nbsp; 2er Teams</p>
+  <div class="hero-chips">
+    <span class="hero-chip">6 Themen zur Wahl</span>
+    <span class="hero-chip">Referat vorbereiten</span>
+    <span class="hero-chip">Kurzpräsentation im Plenum</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ABLAUF -->
+  <p class="eyebrow">Überblick</p>
+  <h2 class="section-title">Wie läuft die Session ab?</h2>
+  <div class="ablauf-box">
+    <div class="ablauf-step">
+      <div class="ablauf-num">Schritt 1</div>
+      <div class="ablauf-text">Thema wählen</div>
+      <div class="ablauf-detail">Team wählt eines der 6 Themen unten</div>
+    </div>
+    <div class="ablauf-step">
+      <div class="ablauf-num">Schritt 2 · ~60 Min</div>
+      <div class="ablauf-text">Mit Perplexity recherchieren</div>
+      <div class="ablauf-detail">Gliederung, Quellen, humorvoller Einstieg erstellen</div>
+    </div>
+    <div class="ablauf-step">
+      <div class="ablauf-num">Schritt 3 · ~30 Min</div>
+      <div class="ablauf-text">Kurzpräsentation halten</div>
+      <div class="ablauf-detail">Jedes Team trägt im Plenum vor (2–3 Min)</div>
+    </div>
+  </div>
+
+  <!-- THEMEN -->
+  <p class="eyebrow">Schritt 1 — Thema aussuchen</p>
+  <h2 class="section-title">Wählt euer Thema</h2>
+  <p class="section-subtitle">Klickt auf eine Karte um euer Thema zu markieren. Jedes Team wählt ein anderes Thema.</p>
+
+  <div class="themen-grid">
+    <div class="thema-card" onclick="selectThema(this)">
+      <div class="thema-badge">Gewählt ✓</div>
+      <div class="thema-fach">🐋 Biologie</div>
+      <div class="thema-title">Balzverhalten der Blauwale</div>
+      <div class="thema-desc">Wie finden die größten Tiere der Welt zueinander? Und warum klingt das wie ein Lied?</div>
+    </div>
+    <div class="thema-card" onclick="selectThema(this)">
+      <div class="thema-badge">Gewählt ✓</div>
+      <div class="thema-fach">🌊 Geographie</div>
+      <div class="thema-title">Warum sinkt Jakarta ins Meer?</div>
+      <div class="thema-desc">Eine Stadt versinkt — aber warum? Klimawandel, Grundwasser, oder beides?</div>
+    </div>
+    <div class="thema-card" onclick="selectThema(this)">
+      <div class="thema-badge">Gewählt ✓</div>
+      <div class="thema-fach">🔭 Physik</div>
+      <div class="thema-title">Warum ist der Himmel blau und nicht lila?</div>
+      <div class="thema-desc">Licht, Streuung, Wellenlängen — und warum unser Gehirn trotzdem blau sieht.</div>
+    </div>
+    <div class="thema-card" onclick="selectThema(this)">
+      <div class="thema-badge">Gewählt ✓</div>
+      <div class="thema-fach">🚽 Geschichte</div>
+      <div class="thema-title">Die Erfindung der Toilette &amp; ihre gesellschaftliche Wirkung</div>
+      <div class="thema-desc">Sanitation als Zivilisationssprung — und was Cholera damit zu tun hat.</div>
+    </div>
+    <div class="thema-card" onclick="selectThema(this)">
+      <div class="thema-badge">Gewählt ✓</div>
+      <div class="thema-fach">🏛 Geschichte</div>
+      <div class="thema-title">Warum das Römische Reich wirklich gefallen ist</div>
+      <div class="thema-desc">War es Blei im Wasser, die Migration, die Inflation — oder alles zusammen?</div>
+    </div>
+    <div class="thema-card" onclick="selectThema(this)">
+      <div class="thema-badge">Gewählt ✓</div>
+      <div class="thema-fach">❄️ Physik</div>
+      <div class="thema-title">Wie funktioniert ein Kühlschrank wirklich?</div>
+      <div class="thema-desc">Thermodynamik für alle — Kältemittel, Kompressor und das zweite Gesetz.</div>
+    </div>
+  </div>
+
+  <!-- DELIVERABLES -->
+  <div class="deliverables-section">
+    <p class="eyebrow">Was ihr erstellt</p>
+    <h2 class="section-title">Deliverables pro Team</h2>
+    <p class="section-subtitle">Diese vier Dinge erstellt ihr mit Perplexity — und präsentiert sie am Ende im Plenum.</p>
+    <div class="deliv-grid">
+      <div class="deliv-card">
+        <div class="deliv-icon">📋</div>
+        <div class="deliv-name">Gliederung</div>
+        <div class="deliv-desc">Strukturiert, 15-Minuten-tauglich — als ob ihr wirklich vortragt</div>
+      </div>
+      <div class="deliv-card">
+        <div class="deliv-icon">📚</div>
+        <div class="deliv-name">Quellenverzeichnis</div>
+        <div class="deliv-desc">Mit Perplexity generiert — auf Richtigkeit prüfen!</div>
+      </div>
+      <div class="deliv-card">
+        <div class="deliv-icon">😄</div>
+        <div class="deliv-name">Humorvoller Einstieg</div>
+        <div class="deliv-desc">2–3 Sätze die das Publikum abholen — live vortragen im Plenum</div>
+      </div>
+      <div class="deliv-card">
+        <div class="deliv-icon">💡</div>
+        <div class="deliv-name">Eure Reflexion</div>
+        <div class="deliv-desc">Was hat Perplexity gut gemacht? Wo habt ihr korrigiert?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERGEBNISSE / PADLET -->
+  <div class="ergebnisse-section" id="ergebnisse">
+    <p class="eyebrow">Schritt 3 — Ergebnisse teilen</p>
+    <h2 class="section-title">Ergebnis-Board</h2>
+    <p class="section-subtitle">Postet eure Gliederung, euren humorvollen Einstieg und eure größte Überraschung hier — alle sehen es live.</p>
+
+    <div class="padlet-placeholder">
+      <div class="padlet-icon">📌</div>
+      <h3>Padlet Ergebnis-Board</h3>
+      <p>Hier wird das interaktive Board eingebettet. Teams können ihre Ergebnisse per Handy oder Laptop direkt posten.</p>
+      <div class="padlet-hint">
+        <strong>So richtest du das Padlet ein:</strong><br>
+        1. Gehe zu <strong>padlet.com</strong> und erstelle ein kostenloses Board<br>
+        2. Klicke auf „Teilen" → „In Website einbetten"<br>
+        3. Kopiere den &lt;iframe&gt;-Code<br>
+        4. Ersetze diesen Platzhalter-Block im HTML damit
+      </div>
+    </div>
+    <!-- PADLET PLATZHALTER ENDE — hier iframe einfügen:
+    <iframe src="https://padlet.com/embed/DEIN-BOARD-ID"
+      frameborder="0" allow="camera;microphone;geolocation"
+      width="100%" height="480" style="border-radius:12px;display:block;margin-top:24px">
+    </iframe>
+    -->
+  </div>
+
+  <!-- MATERIALIEN -->
+  <div>
+    <p class="eyebrow">Werkzeuge</p>
+    <h2 class="section-title">Materialien &amp; Links</h2>
+    <div class="mat-grid">
+      <a href="https://www.perplexity.ai" target="_blank" class="mat-card">
+        <div class="mat-icon">🔍</div>
+        <div class="mat-name">Perplexity AI</div>
+        <div class="mat-desc">perplexity.ai — Das Tool für diese Session (KI-gestützte Suche mit Quellen)</div>
+      </a>
+      <a href="https://copilot.microsoft.com" target="_blank" class="mat-card">
+        <div class="mat-icon">🤖</div>
+        <div class="mat-name">Microsoft Copilot</div>
+        <div class="mat-desc">Zum Vergleich — wie unterscheidet sich Copilot von Perplexity?</div>
+      </a>
+      <a href="index.html#p12" class="mat-card">
+        <div class="mat-icon">📋</div>
+        <div class="mat-name">Agenda — Phase 12</div>
+        <div class="mat-desc">Zurück zum Tagesablauf, Perplexity-Session Block</div>
+      </a>
+      <a href="copilot.html" class="mat-card">
+        <div class="mat-icon">🔵</div>
+        <div class="mat-name">Copilot-Session</div>
+        <div class="mat-desc">Die Vormittags-Session mit Aufgabenkarten</div>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<footer>
+  <a href="index.html">← Zurück zur Agenda</a> &nbsp;·&nbsp;
+  <a href="copilot.html">Copilot-Session</a>
+</footer>
+
+<!-- QR MODAL -->
+<div class="qr-overlay" id="qr-modal" onclick="closeQR()">
+  <div class="qr-box" onclick="event.stopPropagation()">
+    <h3>📱 Diese Seite teilen</h3>
+    <p>QR-Code scannen — öffnet direkt die Perplexity-Session</p>
+    <div id="qr-canvas"></div>
+    <div class="qr-url-text" id="qr-url-text"></div>
+    <button class="qr-close" onclick="closeQR()">Schließen</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+function selectThema(card){
+  // Only allow one selection at a time
+  document.querySelectorAll('.thema-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  card.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+let qrDone = false;
+function openQR(){
+  document.getElementById('qr-modal').classList.add('open');
+  const url = window.location.href;
+  document.getElementById('qr-url-text').textContent = url;
+  if(!qrDone){
+    new QRCode(document.getElementById('qr-canvas'),{text:url,width:180,height:180,colorDark:'#6d28d9',colorLight:'#fff'});
+    qrDone=true;
+  }
+}
+function closeQR(){ document.getElementById('qr-modal').classList.remove('open'); }
+</script>
+</body>
+</html>
